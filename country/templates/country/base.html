@@ -14,7 +14,7 @@
   </nav>
   {% if user.is_authenticated %}
     {{user}}
-    <a href="{% url 'account_logout' %}">Sign Out</a>
+    <a class='float-right' href="{% url 'account_logout' %}">Sign Out</a>
   {% else %}
     <a class="btn btn-outline-primary" href="{% provider_login_url 'google' %}">Login With Google</a>
     <a class="btn btn-outline-primary" href="{% provider_login_url 'facebook' method='js_sdk' %}">Facebook Connect</a>
