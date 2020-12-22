@@ -10,62 +10,73 @@ from .models import country
 from .serializers import CountrySerializer
 
 # Create your views here.
-@login_required(login_url="/account/login/")
+@login_required
 def index(request):
     country_list = country.objects.all()
     context ={
         'country_list':country_list
     }
-    return render(request,'country/index2.html',context)
+    return render(request,'country/index.html',context)
 
-@login_required(login_url="/account/login/")
-def details(request,country_id):
-    countrys = country.objects.get(id=country_id)
-    return render(request,'country/details.html',{'country':countrys})
+@login_required
+def details(request,country_id): 
+    try:
+        countrys = country.objects.get(id=country_id)
+    except country.DoesNotExist:
+        countrys = None
+    # countrys = country.objects.get(id=country_id)
+    return render(request,'country/countryList.html',{'country':countrys})
 
-@login_required(login_url="/account/login/")
+@login_required
 def add_country(request):
     if request.method == "POST":
-        country_name=request.POST.get('country_name',)
+        countryName=request.POST.get('countryName',)
         currency=request.POST.get('currency',)
-        country_image=request.FILES['country_image']
-        native_name=request.POST.get('native_name',)
+        countryImage=request.FILES['countryImage']
+        nativeName=request.POST.get('nativeName',)
         capital=request.POST.get('capital',)
         population=request.POST.get('population',)
-        country_code=request.POST.get('country_code',)
-        laguage=request.POST.get('laguage',)
+        countryCode=request.POST.get('countryCode',)
+        language=request.POST.get('language',)
         region=request.POST.get('region',)
-        countrys = country(country_name=country_name,currency=currency,country_image=country_image,native_name=native_name,capital=capital,population=population,country_code=country_code,laguage=laguage,region=region,)
+        countrys = country(countryName=countryName,currency=currency,countryImage=countryImage,nativeName=nativeName,capital=capital,population=population,countryCode=countryCode,language=language,region=region,)
         countrys.save()
         return redirect('/country')
-    return render(request,'country/add_country.html')
+    return render(request,'country/addCountry.html')
 
-@login_required(login_url="/account/login/")
+@login_required
 def update(request,id):
-    countrys = country.objects.get(id=id)
+    try:
+        countrys = country.objects.get(id=id)
+    except country.DoesNotExist:
+        countrys = None
+    # countrys = country.objects.get(id=id)
     form = countryForm(request.POST or None, request.FILES, instance=countrys)
     if form.is_valid():
         form.save()
         return redirect('/country')
-    return render(request,'country/edit.html',{'form':form,'country':countrys})
+    return render(request,'country/editCountry.html',{'form':form,'country':countrys})
 
-@login_required(login_url="/account/login/")
+@login_required
 def delete(request,id):
     if request.method == "POST":
-        countrys=country.objects.get(id=id)
+        try:
+            countrys=country.objects.get(id=id)
+        except country.DoesNotExist:
+            countrys = None
+        # countrys=country.objects.get(id=id)
         countrys.delete()
         return redirect('/country')
-    return render(request,'country/delete.html')
-
-
-
+    return render(request,'country/deleteCountry.html')
 
 class CountryListView(generics.ListCreateAPIView):
     queryset = country.objects.all()
     serializer_class = CountrySerializer
+
 class CountryDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = country.objects.all()
     serializer_class = CountrySerializer
+
 @api_view(['GET','POST','PATCH','PUT','DELETE'])
 def saveCountry(request):
     if request.method =="POST":
@@ -73,4 +84,4 @@ def saveCountry(request):
         if saveSerialize.is_valid():
             saveSerialize.save()
             return Response(saveSerialize.data,status=status.HTTP_201_CREATED)
-            return Response(saveSerialize.data,status=status.HTTP_400_BAD_REQUEST)
+        return Response(saveSerialize.data,status=status.HTTP_400_BAD_REQUEST)
